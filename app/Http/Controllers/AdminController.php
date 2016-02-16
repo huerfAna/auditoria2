@@ -30,7 +30,7 @@ class AdminController extends Controller
 		  ->orderby('ref_fechapago')->paginate(10);	
 		$auditoria->setPath('administracion');
 		
-		return view('admin_anexo24')->with(['claves' => $claves, 'fechas' => $fechas, 'auditoria' => $auditoria]);			
+		return view('administration.index')->with(['claves' => $claves, 'fechas' => $fechas, 'auditoria' => $auditoria]);			
 	}	
 	
 }

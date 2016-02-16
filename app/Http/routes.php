@@ -20,7 +20,7 @@ Route::resource('validation', 'ValidationController',['only' => ['index', 'store
 Route::resource('infraction','InfractionController',['except' => ['show']]);
 Route::resource('anexo','AnexoController');
 Route::resource('checklist','ListController');
-
+Route::resource('administration','AdminController');
 
 
 Route::post('/auditar', 'AuditController@run');
@@ -35,7 +35,7 @@ Route::post('tipoDocumento', 'ValidationController@getDocument');
 
 Route::resource('solution','SolutionController');
 Route::resource('process','ResultController');
-Route::resource('administration','AdminController');
+
 
 
 

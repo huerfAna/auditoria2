@@ -2,7 +2,7 @@
 @section('content')
 <div class="container">
       <div class="panel">      
-           {!! Form::open(['route' => ['administracion.index'], 'method' => 'GET']) !!}  
+           {!! Form::open(['route' => ['administration.index'], 'method' => 'GET']) !!}  
            <div class="panel-body">
                   <div class="medium-3 columns">                  
                         {!! Form::label('Aduana-Patente-Pedimento') !!}
@@ -109,7 +109,7 @@
                                           <td>1</td>
                                     @endif        
                                     <?php $referencia = $aud->pk_aduana.'-'.$aud->pk_patente.'-'.$aud->pk_pedimento; ?>                                    
-                                    <td><a href="{{ route('expedientes.show',$referencia) }}"><i class="icon icon-notepad20"></i></a></td>
+                                    <td><a href="{{ route('checklist.show',$referencia) }}"><i class="icon icon-notepad20"></i></a></td>
                                     
                                     
                               </tr>

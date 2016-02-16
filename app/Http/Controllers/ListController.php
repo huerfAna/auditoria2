@@ -8,6 +8,7 @@ use App\Validation;
 use App\Checklist;
 use Session;
 use Input;
+use App\Record;
 use App\Http\Requests\ListRequest;
 
 
@@ -20,7 +21,7 @@ class ListController extends Controller
 		$transporte = \DB::connection('master')->table('mdb_transp')->lists('tra_medio','tra_clave');		
 		$empresa = Session::get('empresa');
 
-		$check = \DB::select('select * from auditoria.aud_checklist chk INNER JOIN secenetc_master_mdb.mdb_tipodocum td ON chk.chk_document = td.doc_clave INNER JOIN secenetc_master_mdb.mdb_transp trans ON chk.chk_transport = trans.tra_clave 	WHERE chk_company = ?', [$empresa]);
+		$check = \DB::select('select chk.id as id, doc_nombre, chk_opera,chk_required,tra_medio from auditoria.aud_checklist chk INNER JOIN secenetc_master_mdb.mdb_tipodocum td ON chk.chk_document = td.doc_clave INNER JOIN secenetc_master_mdb.mdb_transp trans ON chk.chk_transport = trans.tra_clave 	WHERE chk_company = ?', [$empresa]);
 
 		//$check  = DB::raw()Checklist::join('')->where('chk_company',$empresa)->get();
 
@@ -29,69 +30,46 @@ class ListController extends Controller
 	public function show($referen)
 	{
 		$empresa = Session::get('empresa');
-		//Expedient::where('exp_referen',$referen)->delete();
-		//$documentos = \DB::connection('master')->table('mdb_tipodocum')->select('doc_clave','doc_nombre')->get();		
-		/*foreach ($documentos as $doc) 
-		{
-			$result = Result::where('res_referen', $referen)->first();
-			if(!empty($result))
-			{
-				$validacion = Validation::where('attribute_id',9)->where('id',$result->validations_id)->whereRaw('SUBSTRING_INDEX(val_data, "|", 1) = '.$doc->doc_clave)->count();
-				if($validacion > 0)
-				{
-					$imagen = \DB::connection('users')->table('opauimg')->where('pk_referencia',$referen)->where('imgtipodoc',$doc->doc_clave)->count();
-					if($imagen > 0 )
-						$check = 1;
-					else
-						$check = 0;
-				}
-				else
-				{
-					$check = 2;
-				}
-			}
-			else
-			{
-				$check = 0;
-			}
-			$data = [
-				"chk_referen"  => $referen,
-				"chk_document" => $doc->doc_nombre,
-				"chk_status"   => $check,
-				"chk_company"  => $empresa
-			];
-			Checklist::create($data);
-		}*/
-
-        
         $pedimento = \DB::connection('users')->table('optr01')->select('ref_transport1','ref_tipo')->where('pk_referencia',$referen)->first();
-
-
-        /*$resultado = Result::join('aud_validations' , 'aud_results.validations_id' ,'=' , 'aud_validations.id')
-            ->join('aud_anexo22' , 'aud_validations.anexo22_id' , '=' , 'aud_anexo22.id')
-            ->join('aud_infractions' , 'aud_anexo22.infractions_id' , '=' , 'aud_infractions.id')
-            ->leftjoin('aud_solutions' , 'aud_results.id' ,'=' , 'aud_solutions.results_id')
-            ->select('aud_solutions.id as idsol','res_referen','aud_results.id as id','a22_name','val_description','inf_fundament','inf_description','inf_valmax','res_status','inf_fine')
-            ->where('res_status',0)->where('res_referen','like','%'.$referen.'%')
-            ->orderby('res_referen')
-            ->get();*/
-        $result =  Checklist::where('chk_opera',$pedimento->ref_tipo)->where('chk_transport',$pedimento->ref_transport1)->get();
-
+        $result = \DB::select('select chk.id as id,chk_document,doc_nombre,chk_required from auditoria.aud_checklist chk INNER JOIN secenetc_master_mdb.mdb_tipodocum td ON chk.chk_document = td.doc_clave WHERE chk_opera = ? AND  chk_transport = ?', [$pedimento->ref_tipo,$pedimento->ref_transport1]);
         
-       // return view('results')->with(['result'=> $resultado]);
-		return view('list_document')->with(['document'=>$result,'referen'=>$referen]);
+		return view('administration.list')->with(['document'=>$result,'referen'=>$referen]);
 	}	
-	/*public function update (ListRequest $request, $referen)
+	public function update (ListRequest $request, $referen)
 	{	
-		//Checklist::where('chk_referen',$referen)->delete();
+		$empresa = Session::get('empresa');
+		$input = Input::all();
+		$pedimento = \DB::connection('users')->table('optr01')->select('ref_transport1','ref_tipo')->where('pk_referencia',$referen)->first();
+		$result = Checklist::where('chk_opera', $pedimento->ref_tipo)->where('chk_transport',$pedimento->ref_transport1)->get();
+		foreach ($result as $res) {
+			$doc = $input['id_'.$res->id];
+		 	$digital = 0;
+		 	$fisico = 0;
+		 	
+		 	if(isset($input['exp_digital_'.$res->id]))	
+		 		$digital = $input['exp_digital_'.$res->id];	
+		 	if(isset($input['exp_material_'.$res->id]))
+		 		$fisico =  $input['exp_material_'.$res->id];	
+
+			Record::updateOrCreate(['exp_referen'=>$referen,'exp_document'=>$doc],['exp_material' => $fisico,'exp_company'=>$empresa,'exp_digital'=>$digital]);
 		//$id = 'chk'.$request->chk_id;		
-		
-		return $request->all();
-	}*/
+		}
+		return redirect()->back();
+	}
 	public function store(ListRequest $request)
 	{		
 		$campos = $request->all();
 		Checklist::create($campos);
+
+		return redirect()->back();
+	}
+
+	public function destroy($id)
+	{
+		Checklist::destroy($id);
+		Session::flash('flash_message', 'check eliminada!');
+
+		return redirect()->back();
 	}
 
 }

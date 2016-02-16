@@ -44,8 +44,11 @@ class AnexoController extends Controller
 		 	$anexo->a22_fine = $mult;
 		 	$anexo->infractions_id = $infra;
 		 	$anexo->save();
+		 	echo $infra.$mult.$rect;
 		 	
 		 }
+
+		 //return redirect()->back();
 		 
 	}
 }

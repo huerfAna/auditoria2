@@ -31,12 +31,14 @@
 		    <button type="submit" class="btn btn-danger round"><i class="icon icon-notepad20"></i></button>
 		{!! Form::close() !!}
 		</div>
+		<br>
 		<table>
 			<thead>
 				<th>Documento</th>
 				<th>Operación</th>
 				<th>Transporte E/S</th>
-				<th>Requerido</th>			
+				<th>Requerido</th>	
+				<th></th>		
 			</thead>
 			<tbody>
 				@foreach($check as $chk)
@@ -53,6 +55,11 @@
 					@else
 					<td></td>
 					@endif
+					<td>
+						{!! Form::open(['method' => 'DELETE','route' => ['checklist.destroy', $chk->id]]) !!}
+                            {!! Form::button('<i class="icon icon-trash1">Eliminar</i>', array('style'=>'border:none','type'=>'submit')) !!}
+                        {!! Form::close() !!} 
+					</td>
 				</tr>
 				@endforeach
 			</tbody>
